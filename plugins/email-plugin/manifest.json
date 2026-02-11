@@ -1,0 +1,6 @@
+{
+    "name": "email-plugin",
+    "version": "1.0.0",
+    "description": "Send emails to your customers easily.",
+    "main": "index.js"
+}

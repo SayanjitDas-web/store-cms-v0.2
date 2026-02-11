@@ -1,0 +1,10 @@
+{
+    "name": "razorpay-payment",
+    "version": "1.0.0",
+    "description": "Razorpay Payment Gateway Integration",
+    "main": "index.js",
+    "dependencies": {
+        "ecommerce-core": "1.0.0"
+    },
+    "protected": true
+}

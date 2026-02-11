@@ -1,0 +1,78 @@
+<%- include('../../../src/views/partials/header') %>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Ecommerce Settings</h1>
+                <p class="text-gray-600">Configure your online store payment and operational settings.</p>
+            </div>
+        </div>
+
+        <% if (locals.success) { %>
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm">
+                <p>
+                    <%= success %>
+                </p>
+            </div>
+            <% } %>
+
+                <% if (locals.error) { %>
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 shadow-sm">
+                        <p>
+                            <%= error %>
+                        </p>
+                    </div>
+                    <% } %>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <form action="/admin/ecommerce/settings" method="POST" class="p-8 space-y-6">
+
+                                <div class="border-b border-gray-100 pb-6">
+                                    <h2 class="text-xl font-bold text-gray-800 mb-4">Payment Methods</h2>
+
+                                    <div
+                                        class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div>
+                                            <h3 class="font-bold text-gray-800">Cash on Delivery (COD)</h3>
+                                            <p class="text-sm text-gray-600">Allow customers to pay when they receive
+                                                their order.</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="enable_cod" name="ENABLE_COD" value="true"
+                                                class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                                <%=settings.ENABLE_COD==='true' ? 'checked' : '' %>>
+                                            <label for="enable_cod"
+                                                class="ml-3 text-sm font-medium text-gray-700">Enable Cash on
+                                                Delivery</label>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="mt-6 border-t border-gray-100 pt-6">
+                                        <h3 class="font-bold text-gray-800 mb-2">Order Cancellation</h3>
+                                        <p class="text-sm text-gray-600 mb-4">Set the time window during which customers
+                                            can cancel their orders.</p>
+
+                                        <div class="flex items-center">
+                                            <label class="text-sm font-medium text-gray-700 mr-4">Cancellation Window
+                                                (Hours)</label>
+                                            <input type="number" name="CANCELLATION_WINDOW_HOURS"
+                                                value="<%= settings.CANCELLATION_WINDOW_HOURS || 24 %>"
+                                                class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 outline-none"
+                                                min="0">
+                                            <span class="text-xs text-gray-500 ml-2">(Set to 0 to disable)</span>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="pt-4 flex justify-end">
+                                        <button type="submit"
+                                            class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-md">
+                                            Save Settings
+                                        </button>
+                                    </div>
+                            </form>
+                        </div>
+    </div>
+
+    <%- include('../../../src/views/partials/footer') %>

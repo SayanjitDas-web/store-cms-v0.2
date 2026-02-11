@@ -1,0 +1,10 @@
+{
+    "name": "shiprocket-integration",
+    "version": "1.0.0",
+    "description": "Integrates Shiprocket with the ecommerce-core plugin for automated order syncing.",
+    "main": "index.js",
+    "dependencies": [
+        "ecommerce-core"
+    ],
+    "protected": true
+}

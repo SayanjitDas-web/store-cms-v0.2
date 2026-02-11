@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "page-builder": true,
+    "nav-manager": true,
+    "email-plugin": true
+  }
+}
