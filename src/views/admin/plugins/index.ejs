@@ -1,147 +1,307 @@
 <%- include('../../partials/header') %>
 
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Plugins</h1>
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Plugin Management</h1>
 
-        <!-- Upload Form -->
-        <form action="/admin/plugins/upload" method="POST" enctype="multipart/form-data"
-            class="flex items-center gap-2">
-            <input type="file" name="plugin" accept=".zip" required class="border rounded px-2 py-1 text-sm bg-white">
-            <button type="submit"
-                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-sm flex items-center">
-                <i class="bi bi-upload mr-1"></i> Install Plugin
-            </button>
-        </form>
-    </div>
-
-    <% if (typeof error !=='undefined' && error) { %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-            <strong class="font-bold">Error!</strong>
-            <span class="block sm:inline">
-                <%= error %>
-            </span>
-        </div>
-        <% } %>
-
-            <% if (typeof success !=='undefined' && success) { %>
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-                    <strong class="font-bold">Success!</strong>
-                    <span class="block sm:inline">
-                        <%= success %>
+            <div class="flex items-center gap-4">
+                <!-- License Status Badge -->
+                <% if (typeof isValidLicense !=='undefined' && isValidLicense) { %>
+                    <span
+                        class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold border border-indigo-200 flex items-center">
+                        <i class="bi bi-patch-check-fill mr-1"></i> PRO LICENSE ACTIVE
                     </span>
+                    <% } else { %>
+                        <span
+                            class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-200">
+                            COMMUNITY EDITION
+                        </span>
+                        <% } %>
+            </div>
+        </div>
+
+        <!-- License Activation Form (Collapsible/Inline) -->
+        <div class="bg-gray-900 text-white rounded-lg p-4 mb-6 shadow-lg border-l-4 border-indigo-500">
+            <form action="/admin/plugins/license" method="POST"
+                class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-lg flex items-center">
+                        <i class="bi bi-cloud-check-fill mr-2 text-indigo-400"></i>
+                        Creator Cloud Account
+                    </h3>
+                    <p class="text-xs text-gray-400">Enter your Pro License Key to unlock premium features and the
+                        official repository.</p>
                 </div>
-                <% } %>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="password" name="licenseKey" placeholder="PRO-XXXX-XXXX"
+                        value="<%= typeof licenseKey !== 'undefined' ? licenseKey : '' %>"
+                        class="bg-gray-800 border-gray-700 text-white rounded px-3 py-2 text-sm w-full md:w-64 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <button type="submit"
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold transition">
+                        <%= (typeof isValidLicense !=='undefined' && isValidLicense) ? 'Update' : 'Activate' %>
+                    </button>
+                </div>
+            </form>
+        </div>
 
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Name</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Version</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Description</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <% if (Object.keys(plugins).length===0) { %>
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-10 text-center text-gray-500">
-                                                No plugins found. Upload one to get started!
-                                            </td>
-                                        </tr>
-                                        <% } else { %>
-                                            <% Object.keys(plugins).forEach(key=> {
-                                                const plugin = plugins[key];
-                                                const isActive = plugin.active !== false;
-                                                %>
-                                                <tr class="hover:bg-gray-50 transition">
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <% if(plugin.icon) { %><i
-                                                                    class="bi <%= plugin.icon %> mr-2 text-indigo-500"></i>
-                                                                <% } %>
-                                                                    <div class="text-sm font-medium text-gray-900">
-                                                                        <%= plugin.name %>
-                                                                    </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <%= plugin.version %>
-                                                    </td>
-                                                    <td class="px-6 py-4 text-sm text-gray-500">
-                                                        <%= plugin.description %>
-                                                            <% if(plugin.error) { %>
-                                                                <div class="text-red-500 text-xs mt-1 font-bold">Error:
-                                                                    <%= plugin.error %>
-                                                                </div>
-                                                                <% } %>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <% if(isActive) { %>
-                                                            <span
-                                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                                                            <% } else { %>
-                                                                <span
-                                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>
-                                                                <% } %>
-                                                    </td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2 items-center">
-                                                        <!-- Toggle Button -->
-                                                        <% if (plugin.canToggle) { %>
-                                                            <form action="/admin/plugins/toggle/<%= key %>"
-                                                                method="POST" class="inline-block m-0 p-0">
-                                                                <input type="hidden" name="enable"
-                                                                    value="<%= !isActive %>">
-                                                                <button type="submit"
-                                                                    class="<%= isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' %> font-bold text-xs uppercase tracking-wider border border-current rounded px-2 py-1 transition-colors">
-                                                                    <%= isActive ? 'Deactivate' : 'Activate' %>
-                                                                </button>
-                                                            </form>
-                                                            <% } else { %>
-                                                                <span
-                                                                    class="text-gray-400 text-xs font-bold uppercase tracking-wider border border-gray-300 rounded px-2 py-1 cursor-not-allowed">
-                                                                    Locked
-                                                                </span>
-                                                                <% } %>
+        <!-- Navigation Tabs -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8">
+                <a href="/admin/plugins"
+                    class="<%= (typeof view === 'undefined' || view === 'installed') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="bi bi-box-seam mr-2"></i> Installed Plugins
+                </a>
+                <a href="/admin/plugins/marketplace"
+                    class="<%= (typeof view !== 'undefined' && view === 'marketplace') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="bi bi-shop mr-2"></i> Creator Cloud Hub <span
+                        class="ml-2 bg-indigo-100 text-indigo-600 py-0.5 px-2 rounded-full text-[10px] font-bold">NEW</span>
+                </a>
+            </nav>
+        </div>
 
-                                                                    <!-- Delete Button -->
-                                                                    <% if (plugin.canUninstall) { %>
-                                                                        <form action="/admin/plugins/delete/<%= key %>"
-                                                                            method="POST" class="inline-block m-0 p-0"
-                                                                            onsubmit="return confirm('Are you sure? This will delete the plugin files.');">
-                                                                            <button type="submit"
-                                                                                class="text-red-600 hover:text-red-900 ml-4"
-                                                                                title="Delete Plugin">
-                                                                                <i class="bi bi-trash"></i>
-                                                                            </button>
-                                                                        </form>
-                                                                        <% } else { %>
-                                                                            <button
-                                                                                class="text-gray-300 ml-4 cursor-not-allowed"
-                                                                                title="System Plugin" disabled>
-                                                                                <i class="bi bi-shield-lock-fill"></i>
-                                                                            </button>
-                                                                            <% } %>
+        <% if (typeof error !=='undefined' && error) { %>
+            <div class="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded mb-4 shadow-sm" role="alert">
+                <p class="text-sm">
+                    <strong class="font-bold">Error:</strong>
+                    <%= error %>
+                </p>
+            </div>
+            <% } %>
+
+                <% if (typeof success !=='undefined' && success) { %>
+                    <div class="bg-green-50 border-l-4 border-green-400 text-green-700 px-4 py-3 rounded mb-4 shadow-sm"
+                        role="alert">
+                        <p class="text-sm">
+                            <strong class="font-bold">Success!</strong>
+                            <%= success %>
+                        </p>
+                    </div>
+                    <% } %>
+
+                        <% if (typeof view==='undefined' || view==='installed' ) { %>
+                            <!-- INSTALLED PLUGINS VIEW -->
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold text-gray-700">Installed Modules</h2>
+                                <form action="/admin/plugins/upload" method="POST" enctype="multipart/form-data"
+                                    class="flex items-center gap-2">
+                                    <input type="file" name="plugin" accept=".zip" required
+                                        class="border rounded px-2 py-1 text-xs bg-white">
+                                    <button type="submit"
+                                        class="bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-gray-900 transition text-xs font-bold">
+                                        <i class="bi bi-plus-lg mr-1"></i> Manual Install
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-100">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Provider</th>
+                                                <th
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Version</th>
+                                                <th
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Status</th>
+                                                <th
+                                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                                    Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <% if (Object.keys(plugins).length===0) { %>
+                                                <tr>
+                                                    <td colspan="4" class="px-6 py-10 text-center text-gray-500">
+                                                        No plugins installed. Visit the Creator Cloud Hub to find new
+                                                        features!
                                                     </td>
                                                 </tr>
-                                                <% }); %>
-                                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                                <% } else { %>
+                                                    <% Object.keys(plugins).forEach(key=> {
+                                                        const plugin = plugins[key];
+                                                        const isActive = plugin.active !== false;
+                                                        %>
+                                                        <tr class="hover:bg-gray-50 transition">
+                                                            <td class="px-6 py-4">
+                                                                <div class="flex items-start">
+                                                                    <div
+                                                                        class="bg-indigo-50 p-2 rounded mr-3 text-indigo-600 text-lg">
+                                                                        <i
+                                                                            class="bi <%= plugin.icon || 'bi-puzzle' %>"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div
+                                                                            class="text-sm font-bold text-gray-900 flex items-center">
+                                                                            <%= plugin.name %>
+                                                                                <% if(plugin.premium) { %>
+                                                                                    <span
+                                                                                        class="ml-2 bg-yellow-100 text-yellow-800 text-[10px] px-1.5 rounded-full font-bold border border-yellow-200">PRO</span>
+                                                                                    <% } %>
+                                                                        </div>
+                                                                        <div
+                                                                            class="text-xs text-gray-500 max-w-xs truncate">
+                                                                            <%= plugin.description %>
+                                                                        </div>
+                                                                        <% if(plugin.error) { %>
+                                                                            <div
+                                                                                class="text-red-500 text-[10px] mt-1 flex items-center">
+                                                                                <i
+                                                                                    class="bi bi-exclamation-octagon-fill mr-1"></i>
+                                                                                <%= plugin.error %>
+                                                                            </div>
+                                                                            <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td
+                                                                class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                                                v<%= plugin.version %>
+                                                            </td>
+                                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                                <% if(isActive) { %>
+                                                                    <span
+                                                                        class="px-2 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-700">ACTIVE</span>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="px-2 py-1 text-[10px] font-bold rounded-full bg-gray-100 text-gray-600">DISABLED</span>
+                                                                        <% } %>
+                                                            </td>
+                                                            <td
+                                                                class="px-6 py-4 whitespace-nowrap text-right text-xs font-medium flex justify-end gap-3 items-center">
+                                                                <% if (plugin.canToggle) { %>
+                                                                    <form action="/admin/plugins/toggle/<%= key %>"
+                                                                        method="POST" class="inline-block m-0">
+                                                                        <input type="hidden" name="enable"
+                                                                            value="<%= !isActive %>">
+                                                                        <button type="submit"
+                                                                            class="text-indigo-600 hover:text-indigo-900 font-bold border-b border-indigo-600 pb-0.5">
+                                                                            <%= isActive ? 'DISABLE' : 'ENABLE' %>
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } %>
+                                                                        <% if (plugin.canUninstall) { %>
+                                                                            <form
+                                                                                action="/admin/plugins/delete/<%= key %>"
+                                                                                method="POST" class="inline-block m-0"
+                                                                                onsubmit="return confirm('Full deletion?');">
+                                                                                <button type="submit"
+                                                                                    class="text-red-500 hover:text-red-700">
+                                                                                    <i class="bi bi-trash3"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                            <% } else { %>
+                                                                                <i class="bi bi-shield-lock text-gray-300"
+                                                                                    title="Core System Module"></i>
+                                                                                <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <% } else { %>
+                                <!-- MARKETPLACE / CLOUD HUB VIEW -->
+                                <div class="mb-4">
+                                    <h2 class="text-xl font-semibold text-gray-700">Official Repository</h2>
+                                    <p class="text-xs text-gray-500">Plugins from the verified Creator Cloud ecosystem.
+                                    </p>
+                                </div>
 
-                    <%- include('../../partials/footer') %>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    <% if (typeof marketplacePlugins !=='undefined' && marketplacePlugins.length> 0) {
+                                        %>
+                                        <% marketplacePlugins.forEach(p=> { %>
+                                            <div
+                                                class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
+                                                <div class="p-6 flex-grow">
+                                                    <div class="flex justify-between items-start mb-5">
+                                                        <div
+                                                            class="bg-indigo-50 text-indigo-600 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                                                            <i class="bi <%= p.icon %>"></i>
+                                                        </div>
+                                                        <div class="flex flex-col items-end">
+                                                            <% if(p.premium) { %>
+                                                                <span
+                                                                    class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] px-2.5 py-1 rounded-full font-black tracking-wider shadow-sm mb-1 uppercase">PRO</span>
+                                                                <% } else { %>
+                                                                    <span
+                                                                        class="bg-gray-100 text-gray-500 text-[10px] px-2.5 py-1 rounded-full font-black tracking-wider border border-gray-200 mb-1 uppercase">FREE</span>
+                                                                    <% } %>
+                                                                        <span
+                                                                            class="text-lg font-black text-gray-900 leading-none">
+                                                                            <%= p.price %>
+                                                                        </span>
+                                                        </div>
+                                                    </div>
+                                                    <h3
+                                                        class="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                                                        <%= p.name %>
+                                                    </h3>
+                                                    <p class="text-sm text-gray-500 mb-6 line-clamp-2 leading-relaxed">
+                                                        <%= p.description %>
+                                                    </p>
+                                                </div>
+
+                                                <div class="px-6 pb-6 mt-auto">
+                                                    <% if(p.premium && !isValidLicense) { %>
+                                                        <button disabled
+                                                            class="w-full bg-gray-50 text-gray-400 py-3 rounded-xl text-sm font-bold cursor-not-allowed flex items-center justify-center border border-gray-100 italic">
+                                                            <i class="bi bi-lock-fill mr-2"></i> Unlock with Pro
+                                                        </button>
+                                                        <% } else { %>
+                                                            <a href="#"
+                                                                class="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200 transition-all flex items-center justify-center active:scale-95">
+                                                                <i class="bi bi-cloud-download-fill mr-2"></i> Install
+                                                                Module
+                                                            </a>
+                                                            <% } %>
+                                                </div>
+
+                                                <div
+                                                    class="bg-gray-50/50 px-6 py-3 border-t border-gray-100 flex justify-between items-center text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                                                    <span>BUILD <%= p.version %></span>
+                                                    <a href="#"
+                                                        class="text-indigo-500 hover:text-indigo-700 transition">VIEW
+                                                        DETAILS <i class="bi bi-arrow-right ml-1"></i></a>
+                                                </div>
+                                            </div>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <div
+                                                        class="col-span-full py-20 text-center bg-white rounded-2xl border border-dashed border-gray-300">
+                                                        <div
+                                                            class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                            <i class="bi bi-cloud-slash text-4xl text-gray-300"></i>
+                                                        </div>
+                                                        <h3 class="text-lg font-bold text-gray-700">Connecting to
+                                                            Creator Cloud...</h3>
+                                                        <p class="text-sm text-gray-400">Please check your internet
+                                                            connection.</p>
+                                                    </div>
+                                                    <% } %>
+                                </div>
+
+                                <% if (typeof isValidLicense !=='undefined' && !isValidLicense) { %>
+                                    <div
+                                        class="mt-12 bg-indigo-50 rounded-2xl p-8 text-center border border-indigo-100">
+                                        <h3 class="text-2xl font-bold text-indigo-900 mb-2">Grow your store with Pro
+                                            Plugins</h3>
+                                        <p class="text-indigo-700 mb-6 max-w-lg mx-auto">Get access to Advanced SEO,
+                                            Social Auto-Posting, and the Inventory Sync Master when you upgrade to a
+                                            Creator Cloud Pro license.</p>
+                                        <a href="https://creator-cms.com/pricing" target="_blank"
+                                            class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg inline-block">
+                                            View Pricing Plans
+                                        </a>
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+    </div>
+
+    <%- include('../../partials/footer') %>

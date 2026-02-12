@@ -12,6 +12,7 @@ class PluginManager {
         this.pluginsDir = path.join(process.cwd(), 'plugins');
         this.configFile = path.join(process.cwd(), 'plugin-config.json');
         this.config = this.loadConfig();
+        this.licenseKey = process.env.CMS_LICENSE_KEY || this.config.licenseKey || null;
     }
 
     loadConfig() {
@@ -55,6 +56,13 @@ class PluginManager {
             }
 
             const manifest = require(manifestPath);
+
+            // Check if it's a premium plugin
+            if (manifest.premium && !this.isValidLicense()) {
+                console.warn(`Plugin ${name}: requires valid Pro License. Skipping.`);
+                this.plugins[name] = { ...manifest, active: false, error: 'License Required' };
+                return;
+            }
 
             // Check Config for Active State
             // Default to true if not in config
@@ -232,6 +240,52 @@ class PluginManager {
         if (!this.plugins[name]) return false;
 
         return this.plugins[name].active !== false;
+    }
+
+    isValidLicense() {
+        // In a real scenario, this would check against a remote server or a cryptographic signature
+        // For now, we simulate a "valid" key if it contains "PRO-"
+        return this.licenseKey && this.licenseKey.startsWith('PRO-');
+    }
+
+    setLicenseKey(key) {
+        this.licenseKey = key;
+        this.config.licenseKey = key;
+        this.saveConfig();
+        return this.isValidLicense();
+    }
+
+    async fetchMarketplacePlugins() {
+        // This is a mock. In production, it would fetch from your central server.
+        return [
+            {
+                name: "advanced-seo-pro",
+                version: "2.1.0",
+                description: "Advanced SEO tools for high-traffic stores.",
+                icon: "bi-graph-up-arrow",
+                premium: true,
+                price: "$49",
+                downloadUrl: "https://api.creator-cms.com/download/seo-pro"
+            },
+            {
+                name: "social-media-auto-poster",
+                version: "1.0.5",
+                description: "Auto-post updates to Twitter and Instagram.",
+                icon: "bi-share",
+                premium: false,
+                price: "Free",
+                downloadUrl: "https://api.creator-cms.com/download/social-auto"
+            },
+            {
+                name: "inventory-sync-master",
+                version: "3.2.0",
+                description: "Sync inventory across Amazon, eBay, and Shopify.",
+                icon: "bi-arrow-repeat",
+                premium: true,
+                price: "$99",
+                downloadUrl: "https://api.creator-cms.com/download/inventory-sync"
+            }
+        ];
     }
 }
 

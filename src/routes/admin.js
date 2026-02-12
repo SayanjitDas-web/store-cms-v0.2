@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
 const adminMenuMiddleware = require('../middlewares/adminMenuMiddleware');
+const PluginManager = require('../core/PluginManager');
 
 const { getPages, createPageForm, createPage, editPageForm, updatePage, deletePage } = require('../controllers/pageController');
 
@@ -17,6 +18,7 @@ router.get('/dashboard', (req, res) => {
 });
 
 const { getPlugins, togglePlugin, uploadPlugin, deletePlugin } = require('../controllers/pluginController');
+const { getMarketplace, updateLicense } = require('../controllers/marketplaceController');
 
 // Page Routes
 // Cloud-Ready Upload Middleware
@@ -39,7 +41,15 @@ router.post('/media/api/upload', upload, mediaController.apiUpload);
 router.post('/media/api/delete', mediaController.apiDelete);
 
 // Plugin Routes
-router.get('/plugins', getPlugins);
+router.get('/plugins', (req, res, next) => {
+    // Inject default view state
+    res.locals.view = 'installed';
+    res.locals.licenseKey = PluginManager.licenseKey;
+    res.locals.isValidLicense = PluginManager.isValidLicense();
+    getPlugins(req, res, next);
+});
+router.get('/plugins/marketplace', getMarketplace);
+router.post('/plugins/license', updateLicense);
 router.post('/plugins/upload', uploadPlugin);
 router.post('/plugins/toggle/:name', togglePlugin);
 router.post('/plugins/delete/:name', deletePlugin);
