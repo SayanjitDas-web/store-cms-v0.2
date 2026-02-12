@@ -89,6 +89,7 @@ This file tells StoreCMS usage information about your plugin.
 *   **name**: Must be unique (use lowercase and hyphens).
 *   **icon**: We use [Bootstrap Icons](https://icons.getbootstrap.com/). Just put the class name here (e.g., `bi-star-fill`).
 *   **main**: The file to load (usually `index.js`).
+*   **protected**: (Optional) Set to `true` to prevent the plugin from being disabled or uninstalled via the admin panel.
 
 ---
 
@@ -238,6 +239,16 @@ HookSystem.addFilter('frontend_header', (html) => {
 });
 ```
 
+### F. Available Data in Views (Locals) 📦
+
+StoreCMS automatically provides certain data to all your views (EJS templates). You don't need to pass these manually.
+
+*   `user`: The currently logged-in user object (or `null`).
+*   `cart`: The current shopping cart object.
+*   `currentPath`: The current URL path (e.g., `/admin/plugins`).
+*   `navLinks`: Array of navigation links (frontend only).
+*   `logo`: The site logo object (frontend only).
+
 ---
 
 ## 6. Step-by-Step Tutorial: Announcement Bar 📢
@@ -337,6 +348,7 @@ Filters **modify data**. They receive a value, change it, and must return it.
 | `frontend_footer` | Append content to `<footer>` | `currentHtml` |
 | `page_content` | Modify the main page HTML | `content`, `pageObject` |
 | `header_nav_links` | Modify navigation menu items | `linksArray` |
+| `header_logo` | Modify the site logo | `logoObject` (`{ type: 'text'|'image', content: string }`) |
 
 **Example:**
 ```javascript
