@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip'); // Requires 'npm install adm-zip'
+const axios = require('axios');
 const HookSystem = require('./HookSystem');
 const MediaAPI = require('../utils/mediaManager');
 const { protect } = require('../middlewares/authMiddleware');
@@ -13,6 +14,7 @@ class PluginManager {
         this.configFile = path.join(process.cwd(), 'plugin-config.json');
         this.config = this.loadConfig();
         this.licenseKey = process.env.CMS_LICENSE_KEY || this.config.licenseKey || null;
+        this.cloudUrl = process.env.CREATOR_CLOUD_URL || 'http://localhost:4000';
     }
 
     loadConfig() {
@@ -58,7 +60,7 @@ class PluginManager {
             const manifest = require(manifestPath);
 
             // Check if it's a premium plugin
-            if (manifest.premium && !this.isValidLicense()) {
+            if (manifest.premium && !(await this.isValidLicense())) {
                 console.warn(`Plugin ${name}: requires valid Pro License. Skipping.`);
                 this.plugins[name] = { ...manifest, active: false, error: 'License Required' };
                 return;
@@ -242,10 +244,19 @@ class PluginManager {
         return this.plugins[name].active !== false;
     }
 
-    isValidLicense() {
-        // In a real scenario, this would check against a remote server or a cryptographic signature
-        // For now, we simulate a "valid" key if it contains "PRO-"
-        return this.licenseKey && this.licenseKey.startsWith('PRO-');
+    async isValidLicense() {
+        if (!this.licenseKey) return false;
+
+        try {
+            const response = await axios.post(`${this.cloudUrl}/api/v1/license/verify`, {
+                licenseKey: this.licenseKey,
+                domain: `localhost:${process.env.PORT || 3000}`
+            });
+            return response.data.success;
+        } catch (error) {
+            console.error('License verification failed:', error.response?.data?.message || error.message);
+            return false;
+        }
     }
 
     setLicenseKey(key) {
@@ -256,36 +267,24 @@ class PluginManager {
     }
 
     async fetchMarketplacePlugins() {
-        // This is a mock. In production, it would fetch from your central server.
-        return [
-            {
-                name: "advanced-seo-pro",
-                version: "2.1.0",
-                description: "Advanced SEO tools for high-traffic stores.",
-                icon: "bi-graph-up-arrow",
-                premium: true,
-                price: "$49",
-                downloadUrl: "https://api.creator-cms.com/download/seo-pro"
-            },
-            {
-                name: "social-media-auto-poster",
-                version: "1.0.5",
-                description: "Auto-post updates to Twitter and Instagram.",
-                icon: "bi-share",
-                premium: false,
-                price: "Free",
-                downloadUrl: "https://api.creator-cms.com/download/social-auto"
-            },
-            {
-                name: "inventory-sync-master",
-                version: "3.2.0",
-                description: "Sync inventory across Amazon, eBay, and Shopify.",
-                icon: "bi-arrow-repeat",
-                premium: true,
-                price: "$99",
-                downloadUrl: "https://api.creator-cms.com/download/inventory-sync"
+        try {
+            const response = await axios.get(`${this.cloudUrl}/api/v1/marketplace`);
+            if (response.data.success) {
+                return response.data.data.map(plugin => ({
+                    name: plugin.name,
+                    version: plugin.version,
+                    description: plugin.description,
+                    icon: plugin.icon || 'bi-box-seam',
+                    premium: plugin.premium,
+                    price: plugin.price,
+                    downloadUrl: plugin.downloadUrl
+                }));
             }
-        ];
+            return [];
+        } catch (error) {
+            console.error('Error fetching marketplace plugins:', error.message);
+            return [];
+        }
     }
 }
 
